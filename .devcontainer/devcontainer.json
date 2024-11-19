@@ -13,7 +13,7 @@
 	// 👇 Use 'postCreateCommand' to run commands after the container is created.
 	// "postCreateCommand": "",
 
-	"postStartCommand": "poetry install && poetry shell",
+	"postStartCommand": "poetry install",
 
 	// 👇 Configure tool-specific properties.
 	"customizations": {
