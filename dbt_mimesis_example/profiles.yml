@@ -1,0 +1,6 @@
+dbt_mimesis_example:
+  target: dev
+  outputs:
+    dev:
+      type: duckdb
+      path: '/workspaces/blog-data-testing-mimesis-dbt/dbt_mimesis_example/dev.duckdb'
