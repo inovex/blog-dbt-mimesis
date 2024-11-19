@@ -1,0 +1,28 @@
+version: 2
+models:
+  - name: raw_flights
+    columns:
+      - name: FlightDate
+        description: Start date of flight
+        data_type: date
+        quote: true
+        data_tests:
+          - not_null
+      - name: UniqueCarrier
+        description: Airline hosting the flight
+        data_type: varchar
+        quote: true
+        data_tests:
+          - not_null
+      - name: OriginCityName
+        description: City where the airplane took of
+        data_type: varchar
+        quote: true
+        data_tests:
+          - not_null
+      - name: DestCityName
+        description: City where the plane landet
+        data_type: varchar
+        quote: true
+        data_tests:
+          - not_null
