@@ -1,5 +1,47 @@
 version: 2
 models:
+  - name: flights
+    columns:
+      - name: FlightDate
+        description: Start date of flight
+        data_type: date
+        quote: true
+        data_tests:
+          - not_null
+      - name: CarrierName
+        description: Airline hosting the flight
+        data_type: varchar
+        quote: true
+        data_tests:
+          - not_null
+      - name: AirplaneId
+        description: ID of the airplane model
+        data_type: varchar
+        quote: true
+        data_test:
+          - not_null
+      - name: OriginCityId
+        description: ID of the City where the airplane took of
+        data_type: integer
+        quote: true
+        data_tests:
+          - not_null
+      - name: DestCityId
+        description: ID of the City where the plane landet
+        data_type: integer
+        quote: true
+        data_tests:
+          - not_null
+    constraints:
+      - type: foreign_key
+        columns: [OriginCityId, DestCityId]
+        to: ref('cities')
+        to_columns: [Id]
+      - type: foreign_key
+        columns: [AirplaneId]
+        to: ref('airplanes')
+        to_columns: [Id]
+
   - name: origin_city
     columns:
       - name: OriginCityName
@@ -9,3 +51,47 @@ models:
         data_tests:
           - not_null
           - unique
+    constraints:
+      - type: foreign_key
+        columns: [cities.Id]
+
+  - name: cities
+    columns:
+      - name: Id
+        description: Unique identifier for a city
+        data_type: integer
+        quote: true
+        data_tests:
+          - not_null
+          - unique
+      - name: CityName
+        description: Name of the city
+    constraints:
+      - type: primary_key
+        columns: [Id]
+
+  - name: airplanes
+    columns:
+      - name: Id
+        description: Unique Identifier for an airplane
+        data_type: integer
+        quote: true
+        data_tests:
+          - not_null
+          - unique
+      - name: AirplaneModel
+        description: Name of the Airplane model
+        data_type: varchar
+        quote: true
+        data_tests:
+          - not_null
+          - unique
+      - name: NumSeats
+        description: Number of seats the Airplane has
+        data_type: integer
+        quote: true
+        data_tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 0
+              inclusive: false
