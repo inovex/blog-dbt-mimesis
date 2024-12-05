@@ -16,11 +16,15 @@ stages:
 
 build-devcontainer:
   stage: build
+  tags:
+    - shared
   script:
     - devcontainer build --workspace-folder . --push false
 
 test-dbt-pipeline:
   stage: test
+  tags:
+    - shared
   script:
     - devcontainer exec --workspace-folder . poetry run python data_generator/main.py --dbt-model-path ./dbt_mimesis_example/seeds/schema.yml --output-path ./dbt_mimesis_example/seeds --min-rows=100 --max-rows=1000
     - devcontainer exec --workspace-folder ./dbt_mimesis_example poetry run dbt seed
