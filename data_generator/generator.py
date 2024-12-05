@@ -95,7 +95,7 @@ class TestDataGenerator:
                     f"Not enough unique values for {column.name}. Creating maximum number available."
                 )
                 self.iterations[table.name] = len(unique_values)
-                self._generate_test_data_for_table(table)
+                self.generate_data()
                 break
 
         return list(unique_values)[:iterations]
