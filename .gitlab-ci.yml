@@ -19,6 +19,8 @@ before_script:
 # Build and Push Dev Container
 build-devcontainer:
   stage: build
+  tags:
+    - shared
   script:
     # Log in to GitLab Container Registry
     - docker login -u gitlab-ci-token -p ${CI_JOB_TOKEN} ${CI_REGISTRY}
