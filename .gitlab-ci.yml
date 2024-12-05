@@ -1,39 +1,34 @@
-image: docker:latest
+image: gcr.io/kaniko-project/executor:latest
 
 variables:
-  DOCKER_DRIVER: overlay
-  DOCKER_HOST: tcp://docker:2376
-  DOCKER_TLS_CERTDIR: "/certs"
-
-services:
-  - docker:dind
+  # Specify the directory for Kaniko's Docker configuration
+  DOCKER_CONFIG: "/kaniko/.docker/"
 
 stages:
   - build
   - test
 
-before_script:
-  # Install dependencies for devcontainers CLI
-  - apk add --update nodejs npm python3 make g++
-  # Install the devcontainers CLI
-  - npm install -g @devcontainers/cli
-
-# Build and Push Dev Container
+# Build and Push Dev Container with Kaniko
 build-devcontainer:
   stage: build
   tags:
     - shared
   script:
-    - docker info
-    # Build and push the dev container image
-    - devcontainer build --workspace-folder . --push false
+    # Authenticate with GitLab Container Registry
+    - echo "{\"auths\":{\"$CI_REGISTRY\":{\"username\":\"$CI_REGISTRY_USER\",\"password\":\"$CI_REGISTRY_PASSWORD\"}}}" > /kaniko/.docker/config.json
+    # Build and push the dev container image using Kaniko
+    - /kaniko/executor --context . --dockerfile ./Dockerfile --destination $CI_REGISTRY_IMAGE:latest
 
+# Test DBT Pipeline Using Pre-Built Dev Container
 test-dbt-pipeline:
   stage: test
   tags:
     - shared
+  image: $CI_REGISTRY_IMAGE:latest
   script:
-    - devcontainer exec --workspace-folder . poetry run python data_generator/main.py --dbt-model-path ./dbt_mimesis_example/seeds/schema.yml --output-path ./dbt_mimesis_example/seeds --min-rows=100 --max-rows=1000
-    - devcontainer exec --workspace-folder ./dbt_mimesis_example poetry run dbt seed
-    - devcontainer exec --workspace-folder ./dbt_mimesis_example poetry run dbt run
-    - devcontainer exec --workspace-folder ./dbt_mimesis_example poetry run dbt test
+    # Run the Python script inside the pre-built devcontainer image
+    - poetry run python data_generator/main.py --dbt-model-path ./dbt_mimesis_example/seeds/schema.yml --output-path ./dbt_mimesis_example/seeds --min-rows=100 --max-rows=1000
+    # Run dbt commands inside the devcontainer image
+    - poetry run dbt seed --profiles-dir ./dbt_mimesis_example
+    - poetry run dbt run --profiles-dir ./dbt_mimesis_example
+    - poetry run dbt test --profiles-dir ./dbt_mimesis_example
