@@ -16,7 +16,6 @@ class TestDataGenerator:
     def __init__(self, schema: DBTSchema, locale: Locale = Locale.EN, data_type_mapping: dict = DATA_TYPE_MAPPING, field_aliases: dict = {}) -> None:
         self.schema = schema
         self.reproducible_id_store: dict[str, list] = {}
-        self.field = Field(locale)
         self.fieldset = Fieldset(locale)
         self.field_aliases = {key: {"name": value} for key, value in field_aliases.items()}
         self.data_type_mapping = data_type_mapping
