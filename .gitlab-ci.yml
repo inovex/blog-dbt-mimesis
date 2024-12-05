@@ -19,6 +19,8 @@ before_script:
 # Build and Push Dev Container
 build-devcontainer:
   stage: build
+  tags:
+    - shared
   script:
     - docker info
     # Build and push the dev container image
