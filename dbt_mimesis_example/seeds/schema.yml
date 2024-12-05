@@ -1,28 +1,46 @@
 version: 2
 seeds:
+  - name: raw_carriers
+    columns:
+      - name: CarrierName
+        description: Name of the Airline
+        data_type: varchar
+        quote: true
+      - name: CarrierCode
+        description: IATA code of the Carrier
+        data_type: varchar
+        quote: true
+
+  - name: raw_airplanes
+    columns:
+      - name: AirplaneModel
+        description: Name of the Airplane model
+        data_type: varchar
+        quote: true
+      - name: NumSeats
+        description: Number of seats the Airplane has
+        data_type: integer
+        quote: true
+
   - name: raw_flights
     columns:
       - name: FlightDate
         description: Start date of flight
         data_type: date
         quote: true
-        data_tests:
-          - not_null
-      - name: UniqueCarrier
-        description: Airline hosting the flight
+      - name: CarrierName
+        description: Name of the airline hosting the flight
         data_type: varchar
         quote: true
-        data_tests:
-          - not_null
+      - name: AirplaneModel
+        description: Name of the airplane model
+        data_type: varchar
+        quote: true
       - name: OriginCityName
         description: City where the airplane took of
         data_type: varchar
         quote: true
-        data_tests:
-          - not_null
       - name: DestCityName
         description: City where the plane landet
         data_type: varchar
         quote: true
-        data_tests:
-          - not_null

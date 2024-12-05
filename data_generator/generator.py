@@ -1,51 +1,109 @@
-from pathlib import Path
-import datetime
-from mimesis import Field, Locale, Schema
-from pydantic_yaml import parse_yaml_file_as
-import click
-import pandas as pd
+import random
 
+import pandas as pd
+from mimesis import Fieldset, Locale
 from models import DBTSchema, DBTTable
 
-DATE_TYPE_MAPPING = {
-    "VARCHAR": "text.word",
-    "DATE": "datetime.date"
+# mapping of dbt data types to mimesis providers
+DATA_TYPE_MAPPING = {
+    "VARCHAR": {"name": "text.word"},
+    "DATE": {"name": "datetime.date"},
+    "INTEGER": {"name": "integer_number", "start": 0, "end": 1000},
 }
 
-FIELD_ALIASES = {
-    "OriginCityName": "city",
-    "DestCityName": "city"
-}
 
-@click.command()
-@click.option('--dbt-model-path', help="Path to the dbt model to create dummy data for")
-@click.option('--num-rows', default=10, help="Number of rows to be generated")
-@click.option('--output-path', help="Path to the directory where the generated .csv files are stored")
-def main(dbt_model_path: str, num_rows: 10, output_path: str) -> None:
-    model_path = Path(dbt_model_path)
-    schema = parse_yaml_file_as(model_type=DBTSchema, file=model_path)
-    for table in schema.models:
-        df = generate_test_data(table, iterations=num_rows)
-        df.to_csv(Path(output_path) / Path(f"{table.name}.csv"))
+class TestDataGenerator:
+    def __init__(
+        self,
+        schema: DBTSchema,
+        locale: Locale = Locale.EN,
+        data_type_mapping: dict = DATA_TYPE_MAPPING,
+        field_aliases: dict = {},
+    ) -> None:
+        self.schema = schema
+        self.fieldset = Fieldset(locale)
+        self.field_aliases = {
+            key: {"name": value} for key, value in field_aliases.items()
+        }
+        self.data_type_mapping = data_type_mapping
 
-    
+    def _generate_random_iterations(self, min_rows: int, max_rows: int) -> dict:
+        """Generate a random number of iterations for each table within the specified limits
 
-def serialize_datetime(obj): 
-    if isinstance(obj, datetime.datetime) or isinstance(obj, datetime.date): 
-        return obj.isoformat()
-    raise TypeError("Type not serializable") 
+        Parameters
+        ----------
+        min_rows : int
+            Minimum number of rows to be generated for a table
+        max_rows : int
+            Maximum number of rows to be generated for a table
 
+        Returns
+        -------
+        dict
+            Returns a dictionary with the table names as keys and their corresponding row numbers as values
+        """
 
-def generate_test_data(table: DBTTable, iterations: int) -> pd.DataFrame:
-    field = Field(Locale.EN)
-    schema_definition = lambda: {column.name: field(FIELD_ALIASES.get(column.name, DATE_TYPE_MAPPING[column.data_type.value.upper()])) for column in table.columns}
-    schema = Schema(schema=schema_definition, iterations=iterations)
-    test_data = schema.create()
+        return {
+            table.name: random.randint(min_rows, max_rows)
+            for table in self.schema.models
+        }
 
-    df = pd.DataFrame(test_data)
-    
-    return df
+    def generate_data(
+        self, min_rows: int = 10, max_rows: int = 100
+    ) -> dict[str, pd.DataFrame]:
+        """Generate test data for a given schema
 
+        Parameters
+        ----------
+        min_rows : int
+            Minimum number of rows to be generated for a table
+        max_rows : int
+            Maximum number of rows to be generated for a table
 
-if __name__ == "__main__":
-    main()
+        Returns
+        -------
+        dict[str, pd.DataFrame]
+            Returns a dictionary with table names as keys and pandas DataFrames containing generated data as values
+        """
+
+        iterations = self._generate_random_iterations(min_rows, max_rows)
+        generated_data = {}
+
+        for table in self.schema.models:
+            df = self._generate_test_data_for_table(
+                table=table, iterations=iterations[table.name]
+            )
+            generated_data[table.name] = df
+
+        return generated_data
+
+    def _generate_test_data_for_table(
+        self, table: DBTTable, iterations: int
+    ) -> pd.DataFrame:
+        """Generate test data for a given table
+
+        Parameters
+        ----------
+        table : DBTTable
+            pydantic model describing a dbt table
+        iterations : int, optional
+            Number of rows to be generated, by default 10
+
+        Returns
+        -------
+        pd.DataFrame
+            Returns a pandas DataFrame with the generated data based on the table's schema
+        """
+
+        schema_data = {
+            column.name: self.fieldset(
+                **self.field_aliases.get(
+                    column.name, self.data_type_mapping[column.data_type.value.upper()]
+                ),
+                i=iterations
+            )
+            for column in table.columns
+        }
+
+        df = pd.DataFrame.from_dict(schema_data)
+        return df
