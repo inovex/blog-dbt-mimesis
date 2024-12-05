@@ -22,7 +22,7 @@ build-devcontainer:
   script:
     - docker info
     # Build and push the dev container image
-    - devcontainer build --workspace-folder . --push true --image-name ${CI_REGISTRY_IMAGE}:latest
+    - devcontainer build --workspace-folder . --push false
 
 test-dbt-pipeline:
   stage: test
