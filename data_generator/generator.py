@@ -1,13 +1,14 @@
-from .models import DBTSchema, DBTTable, DBTColumn
+from models import DBTSchema, DBTTable, DBTColumn
 from mimesis import Field, Locale, Fieldset
+from mimesis.keys import maybe
 import pandas as pd
 import random
 
 # mapping of dbt data types to mimesis providers
 DATA_TYPE_MAPPING = {
-    "VARCHAR": "text.word",
-    "DATE": "datetime.date",
-    "INTEGER": "integer_number"
+    "VARCHAR": {"name": "text.word"},
+    "DATE": {"name": "datetime.date"},
+    "INTEGER": {"name": "integer_number", "start": 0, "end": 1000}
 }
 
 
@@ -17,7 +18,7 @@ class TestDataGenerator:
         self.reproducible_id_store: dict[str, list] = {}
         self.field = Field(locale)
         self.fieldset = Fieldset(locale)
-        self.field_aliases = field_aliases
+        self.field_aliases = {key: {"name": value} for key, value in field_aliases.items()}
         self.data_type_mapping = data_type_mapping
 
     def _generate_random_iterations(self, min_rows: int, max_rows: int) -> dict:
@@ -55,9 +56,20 @@ class TestDataGenerator:
         """
 
         unique_values = set()
+        consecutive_no_increase = 0
+
         while len(unique_values) < iterations:
-            new_values = self.fieldset(self.field_aliases.get(column.name, self.data_type_mapping[column.data_type.value.upper()]),i=iterations*2)
+            previous_len = len(unique_values)
+            new_values = self.fieldset(**self.field_aliases.get(column.name, self.data_type_mapping[column.data_type.value.upper()]),i=iterations*2)
             unique_values.update(new_values)
+
+            if len(unique_values) == previous_len:
+                consecutive_no_increase += 1
+            else:
+                consecutive_no_increase = 0
+            
+            if consecutive_no_increase == 3:
+                raise ValueError(f"Failed to generate {iterations} unique values: No increase in unique values for 3 consecutive loops")
         
         return list(unique_values)[:iterations]
 
@@ -120,8 +132,12 @@ class TestDataGenerator:
                     self.reproducible_id_store[reproducible_id] = self._generate_unique_values(column=column, iterations=iterations)
                 schema_data[column.name] = self.reproducible_id_store[reproducible_id]
                 continue
-        
-            schema_data[column.name] = self.fieldset(self.field_aliases.get(column.name, self.data_type_mapping[column.data_type.value.upper()]), i=iterations)
+            
+            if "unique" in column.data_tests:
+                schema_data = self._generate_unique_values(column=column, iterations=iterations)
+            else:
+                probability_of_nones = 0 if "not_null" in column.data_tests else 0.1
+                schema_data[column.name] = self.fieldset(**self.field_aliases.get(column.name, self.data_type_mapping[column.data_type.value.upper()]), i=iterations, key=maybe(None, probability=probability_of_nones))
 
         df = pd.DataFrame.from_dict(schema_data)
         return df

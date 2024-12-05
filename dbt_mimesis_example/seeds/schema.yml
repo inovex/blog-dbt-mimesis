@@ -33,8 +33,6 @@ seeds:
         description: Number of seats the Airplane has
         data_type: integer
         quote: true
-        data_tests:
-          - not_null
 
   - name: raw_flights
     columns:

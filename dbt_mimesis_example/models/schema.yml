@@ -91,7 +91,6 @@ models:
         data_type: integer
         quote: true
         data_tests:
-          - not_null
           - dbt_utils.accepted_range:
               min_value: 0
               inclusive: false

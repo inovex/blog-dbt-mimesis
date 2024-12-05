@@ -2,8 +2,8 @@ from pathlib import Path
 from pydantic_yaml import parse_yaml_file_as
 import click
 
-from .models import DBTSchema
-from .generator import TestDataGenerator
+from models import DBTSchema
+from generator import TestDataGenerator
 
 FIELD_ALIASES = {
     "OriginCityName": "city",

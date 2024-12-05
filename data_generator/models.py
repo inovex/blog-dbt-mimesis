@@ -8,13 +8,12 @@ class DataType(Enum):
     INTEGER = "integer"
 
 
-
 class DBTColumn(BaseModel):
     """Basic DBT column"""
     name: str
     data_type: DataType
-    data_tests: list[str] = None
-    meta: dict[Literal["primary_key"] | Literal["foreign_key"] | str, bool | str] = {}
+    data_tests: list[str] = []
+    meta: dict[str, str | bool] = {}
 
 
 class DBTTable(BaseModel):
