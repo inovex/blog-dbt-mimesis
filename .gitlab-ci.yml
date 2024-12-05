@@ -1,5 +1,10 @@
+image: docker:latest
+
+variables:
+  DOCKER_TLS_CERTDIR: "/certs"
+
 services:
-  - docker:24.0.5-dind
+  - docker:dind
 
 stages:
   - build
@@ -10,16 +15,8 @@ build-devcontainer:
   tags:
     - shared
   script:
-    # Install Docker
-    - apk add --no-cache docker
-    # Start the Docker daemon in the background
-    - dockerd-entrypoint.sh & sleep 5
-    # Verify Docker is installed and running
-    - docker info
-    # Install Node.js and @devcontainers/cli for building the devcontainer
-    - apk add --no-cache nodejs npm python3 make g++
+    - apk add --update nodejs npm python3 make g++
     - npm install -g @devcontainers/cli
-    # Build the devcontainer image using @devcontainers/cli
     - devcontainer build --workspace-folder . --push false
 
 test-dbt-pipeline:
