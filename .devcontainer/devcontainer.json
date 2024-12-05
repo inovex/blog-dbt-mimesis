@@ -13,7 +13,7 @@
 	// 👇 Use 'postCreateCommand' to run commands after the container is created.
 	// "postCreateCommand": "",
 
-	"postStartCommand": "poetry install && duckdb -c create /workspaces/dbt-mimesis/dbt_mimesis_example/dev.duckdb",
+	"postStartCommand": "poetry install && pre-commit install && duckdb -c create /workspaces/dbt-mimesis/dbt_mimesis_example/dev.duckdb",
 
 	// 👇 Configure tool-specific properties.
 	"customizations": {

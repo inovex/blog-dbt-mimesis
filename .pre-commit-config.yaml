@@ -1,0 +1,30 @@
+repos:
+  - repo: local
+    hooks:
+      - id: autoflake
+        entry: poetry run autoflake --remove-all-unused-imports -i
+        name: autoflake
+        language: system
+      - id: isort
+        entry: poetry run isort
+        name: isort
+        language: system
+        args: ["--profile", "black", "--project", "airflow", "tests"]
+        files: .+\.py
+      - id: black
+        entry: poetry run black
+        name: black
+        language: system
+        files: .+\.py
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+        exclude: requirements.txt
+        exclude_types:
+          - csv
+      - id: check-yaml
+        args:
+          - --unsafe

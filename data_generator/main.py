@@ -1,21 +1,31 @@
 from pathlib import Path
-from pydantic_yaml import parse_yaml_file_as
-import click
 
-from models import DBTSchema
+import click
 from generator import TestDataGenerator
+from models import DBTSchema
+from pydantic_yaml import parse_yaml_file_as
 
 FIELD_ALIASES = {
     "OriginCityName": "city",
     "DestCityName": "city",
-    "AirplaneModel": "airplane"
+    "AirplaneModel": "airplane",
 }
 
+
 @click.command()
-@click.option('--dbt-model-path', help="Path to the dbt model to create dummy data for")
-@click.option('--min-rows', default=10, help="Minumum number of rows to be generated for a table")
-@click.option('--max-rows', default=100, help="Maximum number of rows to be generated for a table")
-@click.option('--output-path', help="Path to the directory where the generated .csv files are stored")
+@click.option("--dbt-model-path", help="Path to the dbt model to create dummy data for")
+@click.option(
+    "--min-rows",
+    default=10,
+    help="Minumum number of rows to be generated for a table. For columns enforcing the 'unique' constraint, the number of rows can be lower than min-rows if less unique values are available. In that case, the maximum number of available unique values will be generated.",
+)
+@click.option(
+    "--max-rows", default=100, help="Maximum number of rows to be generated for a table"
+)
+@click.option(
+    "--output-path",
+    help="Path to the directory where the generated .csv files are stored",
+)
 def main(dbt_model_path: str, min_rows: int, max_rows: int, output_path: str) -> None:
     model_path = Path(dbt_model_path)
     schema = parse_yaml_file_as(model_type=DBTSchema, file=model_path)

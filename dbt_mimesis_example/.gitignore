@@ -4,3 +4,4 @@ dbt_packages/
 logs/
 seeds/*.csv
 .user.yml
+package-lock.yml

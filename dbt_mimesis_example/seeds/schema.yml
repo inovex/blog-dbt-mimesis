@@ -49,7 +49,7 @@ seeds:
         data_tests:
           - not_null
         meta:
-          foreign_key: carriers.CarrierName
+          foreign_key: raw_carriers.CarrierName
       - name: AirplaneModel
         description: Name of the airplane model
         data_type: varchar
@@ -57,7 +57,7 @@ seeds:
         data_test:
           - not_null
         meta:
-          foreign_key: airplanes.AirplaneModel
+          foreign_key: raw_airplanes.AirplaneModel
       - name: OriginCityName
         description: City where the airplane took of
         data_type: varchar
