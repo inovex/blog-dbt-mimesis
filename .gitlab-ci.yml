@@ -2,6 +2,7 @@ image: docker:latest
 
 variables:
   DOCKER_DRIVER: overlay
+  DOCKER_HOST: tcp://docker:2375/
 
 services:
   - docker:dind
