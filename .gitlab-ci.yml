@@ -1,7 +1,7 @@
 image: docker:latest
 
 variables:
-  DOCKER_TLS_CERTDIR: "/certs"
+  DOCKER_DRIVER: overlay
 
 services:
   - docker:dind
@@ -19,11 +19,8 @@ before_script:
 # Build and Push Dev Container
 build-devcontainer:
   stage: build
-  tags:
-    - shared
   script:
-    # Log in to GitLab Container Registry
-    - docker login -u gitlab-ci-token -p ${CI_JOB_TOKEN} ${CI_REGISTRY}
+    - docker info
     # Build and push the dev container image
     - devcontainer build --workspace-folder . --push true --image-name ${CI_REGISTRY_IMAGE}:latest
 
@@ -31,7 +28,8 @@ test-dbt-pipeline:
   stage: test
   tags:
     - shared
-  image: ${CI_REGISTRY_IMAGE}:latest
   script:
-    - poetry run python data_generator/main.py --dbt-model-path ./dbt_mimesis_example/seeds/schema.yml --output-path ./dbt_mimesis_example/seeds --min-rows=100 --max-rows=1000
-    - cd dbt_mimesis_example poetry run dbt seed && poetry run dbt run && poetry run dbt test
+    - devcontainer exec --workspace-folder . poetry run python data_generator/main.py --dbt-model-path ./dbt_mimesis_example/seeds/schema.yml --output-path ./dbt_mimesis_example/seeds --min-rows=100 --max-rows=1000
+    - devcontainer exec --workspace-folder ./dbt_mimesis_example poetry run dbt seed
+    - devcontainer exec --workspace-folder ./dbt_mimesis_example poetry run dbt run
+    - devcontainer exec --workspace-folder ./dbt_mimesis_example poetry run dbt test
