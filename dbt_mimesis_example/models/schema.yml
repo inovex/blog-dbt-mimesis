@@ -1,6 +1,8 @@
 version: 2
 models:
   - name: flights
+    config:
+      contract: {enforced: true}
     columns:
       - name: FlightDate
         description: Start date of flight
@@ -18,54 +20,60 @@ models:
         description: ID of the airplane model
         data_type: integer
         quote: true
+        constraints:
+          - type: not_null
+          - type: foreign_key
+            expression: "airplanes (Id)"
         data_tests:
           - not_null
       - name: OriginCityId
         description: ID of the City where the airplane took of
         data_type: integer
         quote: true
-        data_tests:
-          - not_null
+        constraints:
+          - type: not_null
+          - type: foreign_key
+            expression: "cities (Id)"
       - name: DestCityId
         description: ID of the City where the plane landet
         data_type: integer
         quote: true
-        data_tests:
-          - not_null
-    constraints:
-      - type: foreign_key
-        columns: [OriginCityId, DestCityId]
-        to: ref('cities')
-        to_columns: [Id]
-      - type: foreign_key
-        columns: [AirplaneModelId]
-        to: ref('airplanes')
-        to_columns: [Id]
-
+        constraints:
+          - type: not_null
+          - type: foreign_key
+            expression: "cities (Id)"
   - name: cities
+    config:
+      contract: {enforced: true}
     columns:
       - name: Id
         description: Unique identifier for a city
         data_type: integer
         quote: true
+        constraints:
+          - type: not_null
+          - type: unique
+          - type: primary_key
+      - name: CityName
+        description: Name of the city
+        data_type: varchar
+        quote: true
         data_tests:
           - not_null
           - unique
-      - name: CityName
-        description: Name of the city
-    constraints:
-      - type: primary_key
-        columns: [Id]
 
   - name: airplanes
+    config:
+      contract: {enforced: true}
     columns:
       - name: Id
         description: Unique Identifier for an airplane
         data_type: integer
         quote: true
-        data_tests:
-          - not_null
-          - unique
+        constraints:
+          - type: not_null
+          - type: unique
+          - type: primary_key
       - name: AirplaneModel
         description: Name of the Airplane model
         data_type: varchar
@@ -81,6 +89,3 @@ models:
           - dbt_utils.accepted_range:
               min_value: 0
               inclusive: false
-    constraints:
-      - type: primary_key
-        columns: [Id]

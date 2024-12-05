@@ -4,6 +4,6 @@ WITH cities AS (
 )
 
 SELECT DISTINCT
-    ROW_NUMBER() OVER (ORDER BY CityName) AS Id
+    CAST(ROW_NUMBER() OVER (ORDER BY CityName) AS INTEGER) AS Id
     , CityName
 FROM cities
