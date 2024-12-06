@@ -17,7 +17,8 @@ before_script:
   - chmod +x /usr/local/bin/duckdb
   # Verify installation
   - duckdb --version
-  - duckdb dbt_mimesis_example/dev.duckdb "SELECT 'Database created successfully';"
+  - mkdir -p /workspaces/dbt-mimesis/dbt_mimesis_example/
+  - duckdb /workspaces/dbt-mimesis/dbt_mimesis_example/dev.duckdb "SELECT 'Database created successfully';"
 
 test:
   stage: test
