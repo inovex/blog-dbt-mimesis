@@ -1,6 +1,7 @@
 image: python:3.10-slim  # Use a lightweight Python base image
 
 stages:
+  - setup
   - test
 
 before_script:
@@ -9,6 +10,20 @@ before_script:
   - pip install poetry
   - poetry install
   - source `poetry env info --path`/bin/activate
+  # Install DuckDB CLI
+  - wget https://github.com/duckdb/duckdb/releases/download/v0.8.1/duckdb_cli-linux-amd64.zip
+  - unzip duckdb_cli-linux-amd64.zip -d /usr/local/bin/
+  - chmod +x /usr/local/bin/duckdb
+  # Verify installation
+  - duckdb --version
+
+setup:
+  stage: setup
+  tags:
+    - shared
+  script:
+    # Create a DuckDB database named dev.duckdb
+    - duckdb dbt_mimesis_example/dev.duckdb "SELECT 'Database created successfully';"
 
 test:
   stage: test
