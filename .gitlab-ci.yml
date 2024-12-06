@@ -3,19 +3,11 @@ image: python:3.10-slim  # Use a lightweight Python base image
 stages:
   - test
 
-cache:
-  key: "${CI_COMMIT_REF_SLUG}"  # Cache key based on branch/commit
-  paths:
-    - .venv/  # Cache the virtual environment
-    - .poetry/  # Cache Poetry installation
-
 before_script:
   # Set up Poetry environment
-  - export POETRY_HOME="$CI_PROJECT_DIR/.poetry"
-  - curl -sSL https://install.python-poetry.org | python3 -
-  - export PATH="$POETRY_HOME/bin:$PATH"  # Add Poetry to PATH
-  - poetry config virtualenvs.in-project true  # Create venv in project folder
-  - poetry install  # Install dependencies
+  - pip install poetry
+  - poetry install
+  - source `poetry env info --path`/bin/activate
 
 test:
   stage: test
