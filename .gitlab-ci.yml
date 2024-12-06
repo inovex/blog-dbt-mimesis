@@ -4,7 +4,8 @@ stages:
   - test
 
 before_script:
-  # Set up Poetry environment
+  # Set up environment
+  - apt-get update && apt-get install -y git
   - pip install poetry
   - poetry install
   - source `poetry env info --path`/bin/activate
