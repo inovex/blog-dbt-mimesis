@@ -17,8 +17,8 @@ test:
     # Generate some test data
     - poetry --version
     - poetry run python data_generator/main.py \
-      --dbt-model-path ./dbt_mimesis_example/seeds/schema.yml \
-      --output-path ./dbt_mimesis_example/seeds \
+      --dbt-model-path "./dbt_mimesis_example/seeds/schema.yml" \
+      --output-path "./dbt_mimesis_example/seeds" \
       --min-rows=100 \
       --max-rows=1000
     # Run dbt
