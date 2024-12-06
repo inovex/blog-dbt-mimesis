@@ -19,6 +19,8 @@ before_script:
 
 test:
   stage: test
+  tags:
+    - shared
   script:
     # Generate some test data
     - poetry run python data_generator/main.py \
