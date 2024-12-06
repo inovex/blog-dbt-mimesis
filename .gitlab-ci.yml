@@ -16,13 +16,14 @@ test:
   script:
     # Generate some test data
     - poetry --version
-    - poetry run python data_generator/main.py \
+    - python data_generator/main.py --help
+    - python data_generator/main.py \
       --dbt-model-path "./dbt_mimesis_example/seeds/schema.yml" \
       --output-path "./dbt_mimesis_example/seeds" \
       --min-rows 100 \
       --max-rows 1000
     # Run dbt
     - cd dbt_mimesis_example
-    - poetry run dbt seed
-    - poetry run dbt run
-    - poetry run dbt test
+    - dbt seed
+    - dbt run
+    - dbt test
