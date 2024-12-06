@@ -1,34 +1,33 @@
-image: gcr.io/kaniko-project/executor:latest
-
-variables:
-  # Specify the directory for Kaniko's Docker configuration
-  DOCKER_CONFIG: "/kaniko/.docker/"
+image: python:3.10-slim  # Use a lightweight Python base image
 
 stages:
-  - build
   - test
 
-# Build and Push Dev Container with Kaniko
-build-devcontainer:
-  stage: build
-  tags:
-    - shared
-  script:
-    # Authenticate with GitLab Container Registry
-    - echo "{\"auths\":{\"$CI_REGISTRY\":{\"username\":\"$CI_REGISTRY_USER\",\"password\":\"$CI_REGISTRY_PASSWORD\"}}}" > /kaniko/.docker/config.json
-    # Build and push the dev container image using Kaniko
-    - /kaniko/executor --context . --dockerfile ./Dockerfile --destination $CI_REGISTRY_IMAGE:latest
+cache:
+  key: "${CI_COMMIT_REF_SLUG}"  # Cache key based on branch/commit
+  paths:
+    - .venv/  # Cache the virtual environment
+    - .poetry/  # Cache Poetry installation
 
-# Test DBT Pipeline Using Pre-Built Dev Container
-test-dbt-pipeline:
+before_script:
+  # Set up Poetry environment
+  - export POETRY_HOME=.poetry
+  - python3 -m venv $POETRY_HOME
+  - $POETRY_HOME/bin/pip install poetry
+  - $POETRY_HOME/bin/poetry config virtualenvs.in-project true
+  - $POETRY_HOME/bin/poetry install
+
+test:
   stage: test
-  tags:
-    - shared
-  image: $CI_REGISTRY_IMAGE:latest
   script:
-    # Run the Python script inside the pre-built devcontainer image
-    - poetry run python data_generator/main.py --dbt-model-path ./dbt_mimesis_example/seeds/schema.yml --output-path ./dbt_mimesis_example/seeds --min-rows=100 --max-rows=1000
-    # Run dbt commands inside the devcontainer image
-    - poetry run dbt seed --profiles-dir ./dbt_mimesis_example
-    - poetry run dbt run --profiles-dir ./dbt_mimesis_example
-    - poetry run dbt test --profiles-dir ./dbt_mimesis_example
+    # Generate some test data
+    - poetry run python data_generator/main.py \
+      --dbt-model-path ./dbt_mimesis_example/seeds/schema.yml \
+      --output-path ./dbt_mimesis_example/seeds \
+      --min-rows=100 \
+      --max-rows=1000
+    # Run dbt
+    - cd dbt_mimesis_example
+    - poetry run dbt seed
+    - poetry run dbt run
+    - poetry run dbt test
