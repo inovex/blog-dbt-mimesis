@@ -54,15 +54,19 @@ seeds:
         description: Name of the airplane model
         data_type: varchar
         quote: true
-        data_test:
+        data_tests:
           - not_null
         meta:
           foreign_key: raw_airplanes.AirplaneModel
       - name: OriginCityName
         description: City where the airplane took of
         data_type: varchar
+        data_tests:
+          - not_null
         quote: true
       - name: DestCityName
         description: City where the plane landet
         data_type: varchar
         quote: true
+        data_tests:
+          - not_null
