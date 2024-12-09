@@ -3,4 +3,4 @@ dbt_mimesis_example:
   outputs:
     dev:
       type: duckdb
-      path: '/workspaces/blog-data-testing-mimesis-dbt/dbt_mimesis_example/dev.duckdb'
+      path: '/workspaces/dbt-mimesis/dbt_mimesis_example/dev.duckdb'
