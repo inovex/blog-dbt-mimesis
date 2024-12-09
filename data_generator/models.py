@@ -15,6 +15,7 @@ class DBTColumn(BaseModel):
     name: str
     data_type: DataType
     data_tests: list[str] = []
+    meta: dict[str, str | bool] = {}
 
 
 class DBTTable(BaseModel):

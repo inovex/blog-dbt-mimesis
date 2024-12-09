@@ -6,10 +6,17 @@ seeds:
         description: Name of the Airline
         data_type: varchar
         quote: true
+        data_tests:
+          - not_null
+          - unique
+        meta:
+          primary_key: true
       - name: CarrierCode
         description: IATA code of the Carrier
         data_type: varchar
         quote: true
+        data_tests:
+          - not_null
 
   - name: raw_airplanes
     columns:
@@ -17,6 +24,11 @@ seeds:
         description: Name of the Airplane model
         data_type: varchar
         quote: true
+        data_tests:
+          - not_null
+          - unique
+        meta:
+          primary_key: true
       - name: NumSeats
         description: Number of seats the Airplane has
         data_type: integer
@@ -28,19 +40,33 @@ seeds:
         description: Start date of flight
         data_type: date
         quote: true
+        data_tests:
+          - not_null
       - name: CarrierName
         description: Name of the airline hosting the flight
         data_type: varchar
         quote: true
+        data_tests:
+          - not_null
+        meta:
+          foreign_key: raw_carriers.CarrierName
       - name: AirplaneModel
         description: Name of the airplane model
         data_type: varchar
         quote: true
+        data_tests:
+          - not_null
+        meta:
+          foreign_key: raw_airplanes.AirplaneModel
       - name: OriginCityName
         description: City where the airplane took of
         data_type: varchar
+        data_tests:
+          - not_null
         quote: true
       - name: DestCityName
         description: City where the plane landet
         data_type: varchar
         quote: true
+        data_tests:
+          - not_null

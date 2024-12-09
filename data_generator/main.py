@@ -5,13 +5,19 @@ from generator import TestDataGenerator
 from models import DBTSchema
 from pydantic_yaml import parse_yaml_file_as
 
-FIELD_ALIASES = {"OriginCityName": "city", "DestCityName": "city"}
+FIELD_ALIASES = {
+    "OriginCityName": "city",
+    "DestCityName": "city",
+    "AirplaneModel": "airplane",
+}
 
 
 @click.command()
 @click.option("--dbt-model-path", help="Path to the dbt model to create dummy data for")
 @click.option(
-    "--min-rows", default=10, help="Minumum number of rows to be generated for a table"
+    "--min-rows",
+    default=10,
+    help="Minumum number of rows to be generated for a table. For columns enforcing the 'unique' constraint, the number of rows can be lower than min-rows if less unique values are available. In that case, the maximum number of available unique values will be generated.",
 )
 @click.option(
     "--max-rows", default=100, help="Maximum number of rows to be generated for a table"
