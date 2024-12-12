@@ -154,13 +154,13 @@ class TestDataGenerator:
 
             # generate data according to column type
             if foreign_key:
-                schema_data[column.name] = self._handle_foreign_key(
-                    foreign_key, column, table
+                schema_data[column.name] = self._handle_key_column(
+                    table, column, foreign_key
                 )
                 continue
 
             elif primary_key:
-                schema_data[column.name] = self._handle_primary_key(table, column)
+                schema_data[column.name] = self._handle_key_column(table, column)
                 continue
 
             schema_data[column.name] = self._handle_regular_column(table, column)
@@ -168,41 +168,10 @@ class TestDataGenerator:
         df = pd.DataFrame.from_dict(schema_data)
         return df
 
-    def _handle_foreign_key(
-        self, foreign_key: str, column: DBTColumn, table: DBTTable
-    ) -> list:
-        """Method to generate foreign key data
-
-
-        Parameters
-        ----------
-        foreign_key : str
-            Name of the foreign key in the format 'referenced_table.key_column'
-        column : DBTColumn
-            DBTColumn object
-        table : DBTTable
-            DBTTable object
-
-        Returns
-        -------
-        list
-            Returns a list of values for
-        """
-
-        if foreign_key not in self.reproducible_id_store.keys():
-            # store generated data in reproducible_id_store
-            self.reproducible_id_store[foreign_key] = self._generate_unique_values(
-                table=table,
-                column=column,
-                iterations=self.iterations[foreign_key.split(".")[0]],
-            )
-
-        return random.choices(
-            self.reproducible_id_store[foreign_key], k=self.iterations[table.name]
-        )
-
-    def _handle_primary_key(self, table: DBTTable, column: DBTColumn) -> list:
-        """Method to generate data for primary keys
+    def _handle_key_column(
+        self, table: DBTTable, column: DBTColumn, foreign_key: str = None
+    ) -> None:
+        """Method to generate data for primary/foreign key columns
 
         Parameters
         ----------
@@ -210,17 +179,21 @@ class TestDataGenerator:
             DBTTable object
         column : DBTColumn
             DBTColumn object
-
-        Returns
-        -------
-        list
-            Returns a list of unique values
+        foreign_key : str, optional
+            foreign key, e.g., 'referenced_table.pk', by default None
         """
-        reproducible_id = f"{table.name}.{column.name}"
+        reproducible_id = foreign_key if foreign_key else f"{table.name}.{column.name}"
+        iterations = self.iterations[foreign_key.split(".")[0]] if foreign_key else None
+
         if reproducible_id not in self.reproducible_id_store.keys():
             # store generated data in reproducible_id_store
             self.reproducible_id_store[reproducible_id] = self._generate_unique_values(
-                table, column
+                table, column, iterations
+            )
+
+        if foreign_key is not None:
+            return random.choices(
+                self.reproducible_id_store[foreign_key], k=self.iterations[table.name]
             )
 
         return self.reproducible_id_store[reproducible_id]
