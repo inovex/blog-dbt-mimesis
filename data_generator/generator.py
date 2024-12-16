@@ -84,6 +84,7 @@ class TestDataGenerator:
             )
             unique_values.update(new_values)
 
+            # check whether any new values have been added since previous iteration
             if len(unique_values) == previous_len:
                 consecutive_no_increase += 1
             else:
@@ -147,45 +148,81 @@ class TestDataGenerator:
         schema_data = {}
 
         for column in table.columns:
+            # check if column has primary/foreign key constraints
             primary_key = column.meta.get("primary_key", None)
             foreign_key = column.meta.get("foreign_key", None)
 
+            # generate data according to column type
             if foreign_key:
-                if foreign_key not in self.reproducible_id_store.keys():
-                    self.reproducible_id_store[foreign_key] = (
-                        self._generate_unique_values(
-                            table=table,
-                            column=column,
-                            iterations=self.iterations[foreign_key.split(".")[0]],
-                        )
-                    )
-
-                schema_data[column.name] = random.choices(
-                    self.reproducible_id_store[foreign_key],
-                    k=self.iterations[table.name],
+                schema_data[column.name] = self._handle_key_column(
+                    table, column, foreign_key
                 )
                 continue
+
             elif primary_key:
-                reproducible_id = f"{table.name}.{column.name}"
-                if reproducible_id not in self.reproducible_id_store.keys():
-                    self.reproducible_id_store[reproducible_id] = (
-                        self._generate_unique_values(table=table, column=column)
-                    )
-                schema_data[column.name] = self.reproducible_id_store[reproducible_id]
+                schema_data[column.name] = self._handle_key_column(table, column)
                 continue
 
-            if "unique" in column.data_tests:
-                schema_data = self._generate_unique_values(table=table, column=column)
-            else:
-                probability_of_nones = 0 if "not_null" in column.data_tests else 0.1
-                schema_data[column.name] = self.fieldset(
-                    **self.field_aliases.get(
-                        column.name,
-                        self.data_type_mapping[column.data_type.value.upper()],
-                    ),
-                    i=self.iterations[table.name],
-                    key=maybe(None, probability=probability_of_nones),
-                )
+            schema_data[column.name] = self._handle_regular_column(table, column)
 
         df = pd.DataFrame.from_dict(schema_data)
         return df
+
+    def _handle_key_column(
+        self, table: DBTTable, column: DBTColumn, foreign_key: str = None
+    ) -> None:
+        """Method to generate data for primary/foreign key columns
+
+        Parameters
+        ----------
+        table : DBTTable
+            DBTTable object
+        column : DBTColumn
+            DBTColumn object
+        foreign_key : str, optional
+            foreign key, e.g., 'referenced_table.pk', by default None
+        """
+        reproducible_id = foreign_key if foreign_key else f"{table.name}.{column.name}"
+        iterations = self.iterations[foreign_key.split(".")[0]] if foreign_key else None
+
+        if reproducible_id not in self.reproducible_id_store.keys():
+            # store generated data in reproducible_id_store
+            self.reproducible_id_store[reproducible_id] = self._generate_unique_values(
+                table, column, iterations
+            )
+
+        if foreign_key is not None:
+            return random.choices(
+                self.reproducible_id_store[foreign_key], k=self.iterations[table.name]
+            )
+
+        return self.reproducible_id_store[reproducible_id]
+
+    def _handle_regular_column(self, table: DBTTable, column: DBTColumn) -> list:
+        """Method to generate data for regular columns, i.e., not primary/foreign key colums,
+           and takes into account constraints wrt. nullability and uniqueness
+
+        Parameters
+        ----------
+        table : DBTTable
+            DBTTable object
+        column : DBTColumn
+            DBTColumn object
+
+        Returns
+        -------
+        list
+            Returns a list of generated values
+        """
+        if "unique" in column.data_tests:
+            return self._generate_unique_values(table=table, column=column)
+        else:
+            probability_of_nones = 0 if "not_null" in column.data_tests else 0.1
+            return self.fieldset(
+                **self.field_aliases.get(
+                    column.name,
+                    self.data_type_mapping[column.data_type.value.upper()],
+                ),
+                i=self.iterations[table.name],
+                key=maybe(None, probability=probability_of_nones),
+            )
