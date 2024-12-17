@@ -23,7 +23,7 @@ The goal is to enable robust pipeline testing with realistic, schema-compliant f
 ## Quick Start
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/inovex/dbt-mimesis
+git clone https://github.com/inovex/blog-dbt-mimesis
 cd dbt-mimesis
 ```
 
