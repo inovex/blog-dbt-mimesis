@@ -7,7 +7,6 @@ This repository provides a framework for testing **dbt data pipelines** using:
 - **[Pydantic](https://docs.pydantic.dev/latest/)**: For parsing and validating `schema.yml` files.
 - **[dbt (data build tool)](https://www.getdbt.com/)**: To manage transformations and run tests agains data pipelines.
 
-The goal is to enable robust pipeline testing with realistic, schema-complinat fake data - without relying on sensitive production datasets.
 The goal is to enable robust pipeline testing with realistic, schema-compliant fake data - without relying on sensitive production datasets.
 
 ## Features
