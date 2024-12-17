@@ -32,7 +32,6 @@ jobs:
       - name: Install dependencies
         run: |
           poetry install
-          source `poetry env info --path`/bin/activate
 
       # Install DuckDB CLI
       - name: Install DuckDB CLI
@@ -50,9 +49,9 @@ jobs:
       # Generate test data, run dbt commands, and execute tests
       - name: Run tests
         run: |
-          python data_generator/main.py --dbt-model-path "./dbt_mimesis_example/seeds/schema.yml" --output-path "./dbt_mimesis_example/seeds" --min-rows 100 --max-rows 1000
+          poetry run python data_generator/main.py --dbt-model-path "./dbt_mimesis_example/seeds/schema.yml" --output-path "./dbt_mimesis_example/seeds" --min-rows 100 --max-rows 1000
           cd dbt_mimesis_example
-          dbt deps
-          dbt seed
-          dbt run
-          dbt test
+          poetry run dbt deps
+          poetry run dbt seed
+          poetry run dbt run
+          poetry run dbt test
