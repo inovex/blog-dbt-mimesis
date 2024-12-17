@@ -24,7 +24,7 @@ The goal is to enable robust pipeline testing with realistic, schema-compliant f
 ### 1. Clone the Repository
 ```bash
 git clone https://github.com/inovex/blog-dbt-mimesis
-cd dbt-mimesis
+cd blog-dbt-mimesis
 ```
 
 ### 2. Set Up Your Environment
